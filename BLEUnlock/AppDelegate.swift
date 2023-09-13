@@ -342,6 +342,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     @objc func onUnlock() {
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             print("onUnlock")
+            
+            insertUnlockTime()
+            
             if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
                 if self.ble.unlockRSSI != self.ble.UNLOCK_DISABLED && !self.prefs.bool(forKey: "wakeWithoutUnlocking") {
                     self.runScript("intruded")
@@ -673,6 +676,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
+    func prepareDB() {
+        prepareUnlockTimeDB()
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = NSImage(named: "StatusBarDisconnected")
@@ -724,7 +731,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
         checkAccessibility()
         checkUpdate()
-
+        
+        prepareDB()
+        
         // Hide dock icon.
         // This is required because we can't have LSUIElement set to true in Info.plist,
         // otherwise CBCentralManager.scanForPeripherals won't work.
